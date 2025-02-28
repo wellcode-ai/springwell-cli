@@ -186,9 +186,16 @@ my-project/
 │   │   │   │   └── impl/                # Service implementations
 │   │   │   ├── temporal/                # Temporal workflow components
 │   │   │   │   ├── activity/            # Temporal activities
+│   │   │   │   │   ├── OrderProcessingActivity.java  # Activity interface
 │   │   │   │   │   └── impl/            # Activity implementations
+│   │   │   │   │       └── OrderProcessingActivityImpl.java
+│   │   │   │   ├── worker/              # Temporal worker components
+│   │   │   │   │   ├── TemporalWorkerService.java    # Worker lifecycle management
+│   │   │   │   │   └── TemporalWorkerRegistrar.java  # Worker registration
 │   │   │   │   └── workflow/            # Temporal workflows
+│   │   │   │       ├── OrderProcessingWorkflow.java  # Workflow interface
 │   │   │   │       └── impl/            # Workflow implementations
+│   │   │   │           └── OrderProcessingWorkflowImpl.java
 │   │   │   └── util/                   # Utility classes
 │   │   ├── resources/
 │   │   │   ├── application.yml         # Main application config
@@ -241,6 +248,10 @@ my-project/
 - **Workflow Implementations**: Implement the business logic of your workflows
 - **Activity Interfaces**: Define isolated steps in your workflows
 - **Activity Implementations**: Implement the actual work done in activities
+- **Worker Service**: Manages Temporal worker lifecycle (start, register, and shutdown)
+- **Worker Registrar**: Registers workflow and activity implementations with task queues
+- **Task Queues**: Predefined channels for routing tasks to appropriate workers
+- **Retry Policies**: Configurable retry behavior for activities and workflows
 
 #### 📊 Monitoring and Observability
 - **Datadog Integration**: Pre-configured for metrics, traces, and logs

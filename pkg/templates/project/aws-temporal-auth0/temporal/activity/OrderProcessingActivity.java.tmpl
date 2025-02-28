@@ -1,0 +1,76 @@
+package {{package}}.temporal.activity;
+
+import io.temporal.activity.ActivityInterface;
+import io.temporal.activity.ActivityMethod;
+
+/**
+ * Activity interface for order processing operations.
+ * This defines the contract for activities that handle different aspects
+ * of order processing, such as validation, payment, and fulfillment.
+ */
+@ActivityInterface
+public interface OrderProcessingActivity {
+
+    /**
+     * Validates an order.
+     * 
+     * @param orderId The ID of the order to validate
+     * @return true if the order is valid, false otherwise
+     */
+    @ActivityMethod
+    boolean validateOrder(String orderId);
+    
+    /**
+     * Processes payment for an order.
+     * 
+     * @param orderId The ID of the order to process payment for
+     * @return true if the payment was processed successfully, false otherwise
+     */
+    @ActivityMethod
+    boolean processPayment(String orderId);
+    
+    /**
+     * Reserves inventory for an order.
+     * 
+     * @param orderId The ID of the order to reserve inventory for
+     * @return true if inventory was reserved successfully, false otherwise
+     */
+    @ActivityMethod
+    boolean reserveInventory(String orderId);
+    
+    /**
+     * Fulfills an order by creating a shipment.
+     * 
+     * @param orderId The ID of the order to fulfill
+     * @return The fulfillment ID of the created shipment
+     */
+    @ActivityMethod
+    String fulfillOrder(String orderId);
+    
+    /**
+     * Sends an order confirmation notification.
+     * 
+     * @param orderId The ID of the order
+     * @param fulfillmentId The ID of the fulfillment
+     */
+    @ActivityMethod
+    void sendOrderConfirmation(String orderId, String fulfillmentId);
+    
+    /**
+     * Cancels an order.
+     * 
+     * @param orderId The ID of the order to cancel
+     * @param reason The reason for cancellation
+     */
+    @ActivityMethod
+    void cancelOrder(String orderId, String reason);
+    
+    /**
+     * Refunds a payment for an order.
+     * 
+     * @param orderId The ID of the order to refund
+     * @return true if the refund was processed successfully, false otherwise
+     */
+    @ActivityMethod
+    boolean refundPayment(String orderId);
+} 

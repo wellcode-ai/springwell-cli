@@ -1,0 +1,134 @@
+package {{package}}.temporal.activity.impl;
+
+import {{package}}.temporal.activity.OrderProcessingActivity;
+import {{package}}.service.OrderService;
+import {{package}}.service.PaymentService;
+import {{package}}.service.InventoryService;
+import {{package}}.service.FulfillmentService;
+import {{package}}.service.NotificationService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.UUID;
+
+/**
+ * Implementation of order processing activities.
+ * This class uses various services to execute the business logic for
+ * each step in the order processing flow.
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class OrderProcessingActivityImpl implements OrderProcessingActivity {
+
+    // These services would be fully implemented in a real application
+    private final OrderService orderService;
+    private final PaymentService paymentService;
+    private final InventoryService inventoryService;
+    private final FulfillmentService fulfillmentService;
+    private final NotificationService notificationService;
+
+    @Override
+    public boolean validateOrder(String orderId) {
+        log.info("Validating order: {}", orderId);
+        
+        try {
+            // Call the order service to validate the order
+            boolean isValid = orderService.validateOrder(orderId);
+            log.info("Order validation result for order {}: {}", orderId, isValid);
+            return isValid;
+        } catch (Exception e) {
+            log.error("Error validating order {}: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean processPayment(String orderId) {
+        log.info("Processing payment for order: {}", orderId);
+        
+        try {
+            // Call the payment service to process the payment
+            boolean success = paymentService.processPayment(orderId);
+            log.info("Payment processing result for order {}: {}", orderId, success);
+            return success;
+        } catch (Exception e) {
+            log.error("Error processing payment for order {}: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean reserveInventory(String orderId) {
+        log.info("Reserving inventory for order: {}", orderId);
+        
+        try {
+            // Call the inventory service to reserve inventory
+            boolean success = inventoryService.reserveInventory(orderId);
+            log.info("Inventory reservation result for order {}: {}", orderId, success);
+            return success;
+        } catch (Exception e) {
+            log.error("Error reserving inventory for order {}: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public String fulfillOrder(String orderId) {
+        log.info("Fulfilling order: {}", orderId);
+        
+        try {
+            // Call the fulfillment service to fulfill the order
+            String fulfillmentId = fulfillmentService.createFulfillment(orderId);
+            log.info("Order {} fulfilled with fulfillment ID: {}", orderId, fulfillmentId);
+            return fulfillmentId;
+        } catch (Exception e) {
+            log.error("Error fulfilling order {}: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public void sendOrderConfirmation(String orderId, String fulfillmentId) {
+        log.info("Sending order confirmation for order: {}, fulfillment: {}", orderId, fulfillmentId);
+        
+        try {
+            // Call the notification service to send a confirmation
+            notificationService.sendOrderConfirmation(orderId, fulfillmentId);
+            log.info("Order confirmation sent for order: {}", orderId);
+        } catch (Exception e) {
+            log.error("Error sending confirmation for order {}: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public void cancelOrder(String orderId, String reason) {
+        log.info("Cancelling order: {}, reason: {}", orderId, reason);
+        
+        try {
+            // Call the order service to cancel the order
+            orderService.cancelOrder(orderId, reason);
+            log.info("Order {} cancelled successfully", orderId);
+        } catch (Exception e) {
+            log.error("Error cancelling order {}: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean refundPayment(String orderId) {
+        log.info("Refunding payment for order: {}", orderId);
+        
+        try {
+            // Call the payment service to refund the payment
+            boolean success = paymentService.refundPayment(orderId);
+            log.info("Payment refund result for order {}: {}", orderId, success);
+            return success;
+        } catch (Exception e) {
+            log.error("Error refunding payment for order {}: {}", orderId, e.getMessage(), e);
+            throw e;
+        }
+    }
+} 

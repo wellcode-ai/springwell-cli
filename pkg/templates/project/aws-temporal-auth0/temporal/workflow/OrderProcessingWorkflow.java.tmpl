@@ -1,0 +1,22 @@
+package {{package}}.temporal.workflow;
+
+import io.temporal.workflow.WorkflowInterface;
+import io.temporal.workflow.WorkflowMethod;
+
+/**
+ * Workflow interface for processing orders.
+ * This defines the contract for the order processing workflow,
+ * which coordinates the steps required to process an order.
+ */
+@WorkflowInterface
+public interface OrderProcessingWorkflow {
+
+    /**
+     * Processes an order.
+     * 
+     * @param orderId The ID of the order to process
+     * @return A message indicating the result of the order processing
+     */
+    @WorkflowMethod
+    String processOrder(String orderId);
+} 

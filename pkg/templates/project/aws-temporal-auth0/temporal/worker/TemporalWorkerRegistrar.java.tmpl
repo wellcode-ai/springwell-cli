@@ -1,0 +1,71 @@
+package {{package}}.temporal.worker;
+
+import {{package}}.temporal.activity.impl.OrderProcessingActivityImpl;
+import {{package}}.temporal.workflow.impl.OrderProcessingWorkflowImpl;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
+import io.temporal.worker.WorkerOptions;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+/**
+ * Responsible for registering workflows and activities with Temporal workers.
+ * Each worker processes tasks from a specific task queue.
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class TemporalWorkerRegistrar {
+
+    // The names of the task queues that workers will poll
+    public static final String ORDER_PROCESSING_TASK_QUEUE = "order-processing-queue";
+    public static final String PAYMENT_PROCESSING_TASK_QUEUE = "payment-processing-queue";
+    public static final String NOTIFICATION_TASK_QUEUE = "notification-queue";
+
+    // Activity implementations that need to be registered with workers
+    private final OrderProcessingActivityImpl orderProcessingActivity;
+    // Add other activities as your application grows
+
+    /**
+     * Registers all workers with their associated workflows and activities.
+     * 
+     * @param workerFactory The factory used to create workers
+     * @param defaultOptions The default options to apply to workers
+     */
+    public void registerWorkers(WorkerFactory workerFactory, WorkerOptions defaultOptions) {
+        registerOrderProcessingWorker(workerFactory, defaultOptions);
+        // Register other workers as your application grows
+        
+        log.info("All Temporal workers registered successfully");
+    }
+
+    /**
+     * Registers the worker for order processing workflows and activities.
+     * 
+     * @param workerFactory The factory used to create the worker
+     * @param defaultOptions The default options to apply to the worker
+     */
+    private void registerOrderProcessingWorker(WorkerFactory workerFactory, WorkerOptions defaultOptions) {
+        log.info("Registering order processing worker for task queue: {}", ORDER_PROCESSING_TASK_QUEUE);
+        
+        // Create a worker for the order processing task queue
+        Worker worker = workerFactory.newWorker(ORDER_PROCESSING_TASK_QUEUE, defaultOptions);
+        
+        // Register workflow implementations
+        worker.registerWorkflowImplementationTypes(OrderProcessingWorkflowImpl.class);
+        
+        // Register activity implementations
+        worker.registerActivitiesImplementations(orderProcessingActivity);
+        
+        log.info("Order processing worker registered successfully");
+    }
+
+    /**
+     * You can add more worker registration methods as your application grows.
+     * For example:
+     * - registerPaymentProcessingWorker()
+     * - registerNotificationWorker()
+     * etc.
+     */
+} 

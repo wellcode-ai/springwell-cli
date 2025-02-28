@@ -1,0 +1,90 @@
+package {{package}}.temporal.workflow.impl;
+
+import {{package}}.temporal.activity.OrderProcessingActivity;
+import {{package}}.temporal.workflow.OrderProcessingWorkflow;
+import io.temporal.activity.ActivityOptions;
+import io.temporal.common.RetryOptions;
+import io.temporal.workflow.Workflow;
+import lombok.extern.slf4j.Slf4j;
+
+import java.time.Duration;
+
+/**
+ * Implementation of the order processing workflow.
+ * This orchestrates the steps needed to process an order, including
+ * validation, payment processing, inventory management, and fulfillment.
+ */
+@Slf4j
+public class OrderProcessingWorkflowImpl implements OrderProcessingWorkflow {
+
+    // Define activity options with timeouts and retry policies
+    private final ActivityOptions orderProcessingActivityOptions = ActivityOptions.newBuilder()
+            .setStartToCloseTimeout(Duration.ofMinutes(5))
+            .setRetryOptions(RetryOptions.newBuilder()
+                    .setMaximumAttempts(3)
+                    .setInitialInterval(Duration.ofSeconds(1))
+                    .setMaximumInterval(Duration.ofSeconds(10))
+                    .build())
+            .build();
+
+    // Create activity stubs using the defined options
+    private final OrderProcessingActivity orderProcessingActivity = 
+            Workflow.newActivityStub(OrderProcessingActivity.class, orderProcessingActivityOptions);
+
+    @Override
+    public String processOrder(String orderId) {
+        // Get workflow execution info for logging
+        String workflowId = Workflow.getInfo().getWorkflowId();
+        
+        Workflow.getLogger(this.getClass()).info("Starting order processing workflow for order {}, workflowId: {}", 
+                orderId, workflowId);
+        
+        try {
+            // Step 1: Validate the order
+            boolean isValid = orderProcessingActivity.validateOrder(orderId);
+            if (!isValid) {
+                return "Order validation failed for order: " + orderId;
+            }
+            
+            // Step 2: Process payment
+            boolean paymentProcessed = orderProcessingActivity.processPayment(orderId);
+            if (!paymentProcessed) {
+                // Perform compensation logic if needed
+                orderProcessingActivity.cancelOrder(orderId, "Payment processing failed");
+                return "Payment processing failed for order: " + orderId;
+            }
+            
+            // Step 3: Reserve inventory
+            boolean inventoryReserved = orderProcessingActivity.reserveInventory(orderId);
+            if (!inventoryReserved) {
+                // Perform compensation logic - refund payment
+                orderProcessingActivity.refundPayment(orderId);
+                orderProcessingActivity.cancelOrder(orderId, "Inventory reservation failed");
+                return "Inventory reservation failed for order: " + orderId;
+            }
+            
+            // Step 4: Fulfill the order
+            String fulfillmentId = orderProcessingActivity.fulfillOrder(orderId);
+            
+            // Step 5: Send confirmation notification
+            orderProcessingActivity.sendOrderConfirmation(orderId, fulfillmentId);
+            
+            Workflow.getLogger(this.getClass()).info("Order processing completed successfully for order {}", orderId);
+            return "Order processed successfully. Fulfillment ID: " + fulfillmentId;
+            
+        } catch (Exception e) {
+            // Handle unexpected errors
+            Workflow.getLogger(this.getClass()).error("Error processing order {}: {}", orderId, e.getMessage());
+            
+            // Attempt to cancel the order and perform compensation
+            try {
+                orderProcessingActivity.cancelOrder(orderId, "Workflow error: " + e.getMessage());
+            } catch (Exception cancelError) {
+                Workflow.getLogger(this.getClass()).error("Failed to cancel order {}: {}", 
+                        orderId, cancelError.getMessage());
+            }
+            
+            return "Order processing failed with error: " + e.getMessage();
+        }
+    }
+} 
