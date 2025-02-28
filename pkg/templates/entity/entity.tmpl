@@ -1,0 +1,76 @@
+package {{package}}.domain.entity;
+
+import lombok.Data;
+import jakarta.persistence.*;
+{{#if audit}}
+import jakarta.persistence.EntityListeners;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.time.LocalDateTime;
+{{/if}}
+
+/**
+ * {{name}} entity.
+ */
+@Entity
+@Table(name = "{{tableName}}")
+{{#if lombok}}@Data{{/if}}
+{{#if audit}}
+@EntityListeners(AuditingEntityListener.class)
+{{/if}}
+public class {{name}} {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    {{#each fields}}
+    {{#if this.nullable}}
+    @Column(name = "{{this.columnName}}", nullable = true)
+    {{else}}
+    @Column(name = "{{this.columnName}}")
+    {{/if}}
+    private {{this.type}} {{this.name}};
+
+    {{/each}}
+
+    {{#each relations}}
+    {{#if (eq this.type "oneToOne")}}
+    @OneToOne
+    @JoinColumn(name = "{{this.field}}_id")
+    private {{this.entity}} {{this.field}};
+    {{/if}}
+
+    {{#if (eq this.type "oneToMany")}}
+    @OneToMany(mappedBy = "{{this.field}}")
+    private List<{{this.entity}}> {{this.field}};
+    {{/if}}
+
+    {{#if (eq this.type "manyToOne")}}
+    @ManyToOne
+    @JoinColumn(name = "{{this.field}}_id")
+    private {{this.entity}} {{this.field}};
+    {{/if}}
+
+    {{#if (eq this.type "manyToMany")}}
+    @ManyToMany
+    @JoinTable(
+        name = "{{tableName}}_{{this.field}}",
+        joinColumns = @JoinColumn(name = "{{tableName}}_id"),
+        inverseJoinColumns = @JoinColumn(name = "{{this.field}}_id")
+    )
+    private List<{{this.entity}}> {{this.field}};
+    {{/if}}
+    {{/each}}
+
+    {{#if audit}}
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+    {{/if}}
+} 

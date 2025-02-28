@@ -1,0 +1,24 @@
+package {{package}}.dto;
+
+import lombok.Data;
+import jakarta.validation.constraints.*;
+
+/**
+ * DTO for {{name}} entity.
+ */
+@Data
+public class {{name}}DTO {
+
+    private Long id;
+
+    {{#each fields}}
+    {{#if (eq this.type "String")}}
+    @Size(max = 255)
+    {{/if}}
+    {{#unless this.nullable}}
+    @NotNull
+    {{/unless}}
+    private {{this.type}} {{this.name}};
+
+    {{/each}}
+}

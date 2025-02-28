@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: {{name}}
+  datasource:
+    url: jdbc:postgresql://localhost:5432/{{name}}
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# Auth0 Configuration
+auth0:
+  audience: https://api.{{name}}.com
+  issuer: https://{{name}}.us.auth0.com/
+  
+# AWS Configuration
+aws:
+  region: us-east-1
+  s3:
+    bucket: {{name}}-storage
+
+# Temporal Configuration
+temporal:
+  service-address: localhost:7233
+  namespace: default
+  task-queue: {{name}}-task-queue
+
+# Datadog Configuration
+datadog:
+  service-name: {{name}}
+  environment: development
+  enabled: true
+  
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    {{package}}: DEBUG 

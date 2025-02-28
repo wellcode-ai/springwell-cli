@@ -1,0 +1,97 @@
+package {{package}}.controller;
+
+import {{package}}.domain.entity.{{name}};
+import {{package}}.service.{{name}}Service;
+import {{package}}.dto.{{name}}DTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * REST controller for managing {{name}} entities.
+ */
+@RestController
+@RequestMapping("/api/{{namePlural}}")
+public class {{name}}Controller {
+
+    private final {{name}}Service {{nameCamel}}Service;
+
+    @Autowired
+    public {{name}}Controller({{name}}Service {{nameCamel}}Service) {
+        this.{{nameCamel}}Service = {{nameCamel}}Service;
+    }
+
+    /**
+     * GET /api/{{namePlural}} : Get all {{namePlural}}.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the list of {{namePlural}} in body
+     */
+    @GetMapping
+    public ResponseEntity<List<{{name}}>> getAll{{namePlural}}() {
+        List<{{name}}> {{nameCamel}}List = {{nameCamel}}Service.findAll();
+        return ResponseEntity.ok({{nameCamel}}List);
+    }
+
+    /**
+     * GET /api/{{namePlural}}/{id} : Get the "id" {{name}}.
+     *
+     * @param id the id of the {{name}} to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the {{name}}, or with status 404 (Not Found)
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<{{name}}> get{{name}}(@PathVariable Long id) {
+        return {{nameCamel}}Service.findById(id)
+            .map(ResponseEntity::ok)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "{{name}} not found with id " + id));
+    }
+
+    /**
+     * POST /api/{{namePlural}} : Create a new {{name}}.
+     *
+     * @param {{nameCamel}} the {{name}} to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new {{name}}
+     */
+    @PostMapping
+    public ResponseEntity<{{name}}> create{{name}}(@Valid @RequestBody {{name}} {{nameCamel}}) {
+        {{name}} result = {{nameCamel}}Service.save({{nameCamel}});
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    /**
+     * PUT /api/{{namePlural}}/{id} : Updates an existing {{name}}.
+     *
+     * @param id the id of the {{name}} to update
+     * @param {{nameCamel}} the {{name}} to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated {{name}}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<{{name}}> update{{name}}(@PathVariable Long id, @Valid @RequestBody {{name}} {{nameCamel}}) {
+        if (!{{nameCamel}}Service.findById(id).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "{{name}} not found with id " + id);
+        }
+        {{nameCamel}}.setId(id);
+        {{name}} result = {{nameCamel}}Service.save({{nameCamel}});
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * DELETE /api/{{namePlural}}/{id} : Delete the "id" {{name}}.
+     *
+     * @param id the id of the {{name}} to delete
+     * @return the ResponseEntity with status 204 (NO_CONTENT)
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete{{name}}(@PathVariable Long id) {
+        if (!{{nameCamel}}Service.findById(id).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "{{name}} not found with id " + id);
+        }
+        {{nameCamel}}Service.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+} 

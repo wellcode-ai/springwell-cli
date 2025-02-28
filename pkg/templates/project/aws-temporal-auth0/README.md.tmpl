@@ -1,0 +1,116 @@
+# {{name}}
+
+A Spring Boot application with integrations for Auth0, AWS, Temporal, and Datadog.
+
+## Technologies
+
+- **Spring Boot**: Framework for building Java applications
+- **Auth0**: For authentication and authorization
+- **AWS**: Cloud infrastructure and services
+- **Temporal**: For reliable workflow execution
+- **Datadog**: For monitoring and observability
+
+## Getting Started
+
+### Prerequisites
+
+- Java 17+
+- Docker and Docker Compose
+- AWS CLI (for deployment)
+- Gradle
+
+### Local Development
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd {{name}}
+```
+
+2. Start the local development environment:
+```bash
+docker-compose up -d
+```
+
+3. Run the application:
+```bash
+./gradlew bootRun
+```
+
+4. Access the application at http://localhost:8080/api
+
+5. Access the Temporal Web UI at http://localhost:8088
+
+### Configuration
+
+The application is configured via `application.yml`. For local development, you can create an `application-dev.yml` file with your specific configurations.
+
+### Authentication
+
+This application uses Auth0 for authentication. You need to configure the following properties:
+
+```yaml
+auth0:
+  audience: your-api-audience
+  issuer: your-auth0-issuer
+```
+
+## Project Structure
+
+```
+src/
+├── main/
+│   ├── java/{{package_dir}}/
+│   │   ├── activity/           # Temporal activities
+│   │   ├── config/             # Configuration classes
+│   │   ├── controller/         # REST controllers
+│   │   ├── model/              # Domain models
+│   │   ├── repository/         # Data repositories
+│   │   ├── service/            # Business services
+│   │   └── workflow/           # Temporal workflows
+│   └── resources/
+│       └── application.yml     # Application configuration
+└── test/
+    └── java/{{package_dir}}/   # Tests
+```
+
+## Workflow Examples
+
+The application includes sample Temporal workflows:
+
+1. `SampleWorkflow`: A basic workflow example
+2. To execute a workflow:
+
+```java
+WorkflowClient client = ... // Injected
+SampleWorkflow workflow = client.newWorkflowStub(
+    SampleWorkflow.class,
+    WorkflowOptions.newBuilder()
+        .setTaskQueue("{{name}}-task-queue")
+        .build());
+
+String result = workflow.execute("input-data");
+```
+
+## Deployment
+
+The application includes GitHub Actions workflows for CI/CD with AWS deployment.
+
+### AWS Infrastructure
+
+This application is designed to be deployed to AWS using:
+
+- ECR for Docker image registry
+- ECS for container orchestration
+- RDS for database
+- S3 for file storage
+
+## Monitoring
+
+Datadog is integrated for monitoring and observability:
+
+- Metrics collection
+- Distributed tracing
+- Log management
+
+To enable Datadog, uncomment the agent configuration in the Dockerfile. 

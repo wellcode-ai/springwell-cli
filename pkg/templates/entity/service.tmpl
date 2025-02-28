@@ -1,0 +1,67 @@
+package {{package}}.service;
+
+import {{package}}.domain.entity.{{name}};
+import {{package}}.repository.{{name}}Repository;
+import {{package}}.dto.{{name}}DTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * Service for managing {{name}} entities.
+ */
+@Service
+@Transactional
+public class {{name}}Service {
+
+    private final {{name}}Repository {{nameCamel}}Repository;
+
+    @Autowired
+    public {{name}}Service({{name}}Repository {{nameCamel}}Repository) {
+        this.{{nameCamel}}Repository = {{nameCamel}}Repository;
+    }
+
+    /**
+     * Find all {{name}} entities.
+     *
+     * @return list of all {{name}} entities
+     */
+    @Transactional(readOnly = true)
+    public List<{{name}}> findAll() {
+        return {{nameCamel}}Repository.findAll();
+    }
+
+    /**
+     * Find a {{name}} by ID.
+     *
+     * @param id the ID of the {{name}}
+     * @return the {{name}} entity
+     */
+    @Transactional(readOnly = true)
+    public Optional<{{name}}> findById(Long id) {
+        return {{nameCamel}}Repository.findById(id);
+    }
+
+    /**
+     * Save a {{name}} entity.
+     *
+     * @param {{nameCamel}} the entity to save
+     * @return the saved entity
+     */
+    public {{name}} save({{name}} {{nameCamel}}) {
+        return {{nameCamel}}Repository.save({{nameCamel}});
+    }
+
+    /**
+     * Delete a {{name}} entity by ID.
+     *
+     * @param id the ID of the entity to delete
+     */
+    public void deleteById(Long id) {
+        {{nameCamel}}Repository.deleteById(id);
+    }
+} 

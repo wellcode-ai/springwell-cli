@@ -1,0 +1,43 @@
+package {{package}}.workflow.impl;
+
+import {{package}}.workflow.SampleWorkflow;
+import {{package}}.activity.SampleActivity;
+
+import io.temporal.activity.ActivityOptions;
+import io.temporal.common.RetryOptions;
+import io.temporal.workflow.Workflow;
+
+import java.time.Duration;
+
+/**
+ * Implementation of the SampleWorkflow interface.
+ * This class contains the actual workflow logic that orchestrates activities.
+ */
+public class SampleWorkflowImpl implements SampleWorkflow {
+
+    // Define activity options with timeout and retry policy
+    private final ActivityOptions activityOptions = ActivityOptions.newBuilder()
+            .setScheduleToCloseTimeout(Duration.ofSeconds(10))
+            .setRetryOptions(RetryOptions.newBuilder()
+                    .setMaximumAttempts(3)
+                    .build())
+            .build();
+
+    // Create an activity stub using the options defined above
+    private final SampleActivity activity = Workflow.newActivityStub(
+            SampleActivity.class, activityOptions);
+
+    @Override
+    public String execute(String name) {
+        // Log the start of the workflow
+        Workflow.getLogger(SampleWorkflowImpl.class).info("Workflow execution started for: " + name);
+
+        // Execute an activity as part of this workflow
+        String result = activity.execute("Hello, " + name);
+
+        // Log the completion of the workflow
+        Workflow.getLogger(SampleWorkflowImpl.class).info("Workflow execution completed with result: " + result);
+
+        return result;
+    }
+} 

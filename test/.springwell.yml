@@ -1,0 +1,17 @@
+aws:
+    region: us-east-1
+    defaultservices:
+        - s3
+        - secretsManager
+code:
+    style:
+        indentation: 4
+        linewidth: 120
+    lombok: true
+    standardizefields: true
+plugins: []
+project:
+    package: upi
+    defaultsdirectory: .springwell/templates
+templates:
+    directory: .springwell/templates

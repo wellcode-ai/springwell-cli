@@ -1,0 +1,70 @@
+package {{package}}.service;
+
+import {{package}}.activity.SampleActivity;
+import {{package}}.workflow.SampleWorkflow;
+import {{package}}.workflow.impl.SampleWorkflowImpl;
+
+import io.temporal.client.WorkflowClient;
+import io.temporal.worker.Worker;
+import io.temporal.worker.WorkerFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
+/**
+ * Service responsible for registering and starting Temporal workers.
+ * Workers poll the Temporal service for workflow and activity tasks.
+ */
+@Service
+public class WorkerService {
+
+    private static final Logger logger = LoggerFactory.getLogger(WorkerService.class);
+
+    private final WorkerFactory workerFactory;
+    private final WorkflowClient workflowClient;
+    private final SampleActivity sampleActivity;
+
+    @Value("${temporal.task-queue}")
+    private String taskQueue;
+
+    public WorkerService(
+            WorkerFactory workerFactory,
+            WorkflowClient workflowClient,
+            SampleActivity sampleActivity) {
+        this.workerFactory = workerFactory;
+        this.workflowClient = workflowClient;
+        this.sampleActivity = sampleActivity;
+    }
+
+    @PostConstruct
+    public void startWorkers() {
+        logger.info("Starting Temporal worker for task queue: {}", taskQueue);
+
+        // Create a Worker for the specified task queue
+        Worker worker = workerFactory.newWorker(taskQueue);
+
+        // Register workflow implementations
+        worker.registerWorkflowImplementationTypes(SampleWorkflowImpl.class);
+        
+        // Register activity implementations
+        worker.registerActivitiesImplementations(sampleActivity);
+
+        // Start all workers associated with the worker factory
+        // This method does not block
+        workerFactory.start();
+        
+        logger.info("Temporal worker started successfully");
+    }
+
+    @PreDestroy
+    public void stopWorkers() {
+        logger.info("Shutting down Temporal workers");
+        workerFactory.shutdown();
+        logger.info("Temporal workers shut down successfully");
+    }
+} 

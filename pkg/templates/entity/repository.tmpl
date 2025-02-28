@@ -1,0 +1,13 @@
+package {{package}}.repository;
+
+import {{package}}.domain.entity.{{name}};
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Repository for {{name}} entities.
+ */
+@Repository
+public interface {{name}}Repository extends JpaRepository<{{name}}, Long> {
+    // Add custom query methods here
+} 

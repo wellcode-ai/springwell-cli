@@ -1,0 +1,35 @@
+package {{package}}.activity.impl;
+
+import {{package}}.activity.SampleActivity;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+/**
+ * Implementation of the SampleActivity interface.
+ * This class contains the actual business logic that will be executed as part of a workflow.
+ */
+@Component
+public class SampleActivityImpl implements SampleActivity {
+
+    private static final Logger logger = LoggerFactory.getLogger(SampleActivityImpl.class);
+
+    @Override
+    public String execute(String input) {
+        logger.info("Executing activity with input: {}", input);
+        
+        // Simulate some work
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Activity execution was interrupted", e);
+        }
+
+        String result = input + " - processed by activity";
+        logger.info("Activity execution completed with result: {}", result);
+        
+        return result;
+    }
+} 

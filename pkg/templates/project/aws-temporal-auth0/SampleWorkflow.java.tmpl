@@ -1,0 +1,21 @@
+package {{package}}.workflow;
+
+import io.temporal.workflow.WorkflowInterface;
+import io.temporal.workflow.WorkflowMethod;
+
+/**
+ * Sample Temporal workflow interface.
+ * This defines the contract for a workflow that can be executed by Temporal.
+ */
+@WorkflowInterface
+public interface SampleWorkflow {
+
+    /**
+     * The main workflow method that will be executed by Temporal.
+     * 
+     * @param name The input parameter for the workflow
+     * @return The result of the workflow execution
+     */
+    @WorkflowMethod
+    String execute(String name);
+} 

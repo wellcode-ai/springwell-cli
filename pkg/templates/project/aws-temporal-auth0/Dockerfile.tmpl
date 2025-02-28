@@ -1,0 +1,23 @@
+FROM gradle:7.6.1-jdk17 AS build
+WORKDIR /app
+COPY . .
+RUN gradle build --no-daemon -x test
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+
+# Add Datadog agent (optional, can be enabled when needed)
+RUN curl -L -o dd-java-agent.jar https://dtdg.co/latest-java-tracer
+
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# Set JVM options
+ENV JAVA_OPTS="-Xms512m -Xmx1g"
+
+# Configure Datadog agent (commented out by default)
+# ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/app/dd-java-agent.jar -Ddd.service.name={{name}} -Ddd.env=production"
+
+EXPOSE 8080
+
+# Run the application
+ENTRYPOINT java $JAVA_OPTS -jar /app/app.jar 
