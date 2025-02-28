@@ -1,0 +1,94 @@
+package {{package}}.config;
+
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.secretsmanager.AWSSecretsManager;
+import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+
+/**
+ * AWS configuration for the application.
+ * Sets up AWS clients for S3, SQS, and Secrets Manager services.
+ */
+@Configuration
+public class AwsConfig {
+
+    @Value("${aws.region:us-east-1}")
+    private String region;
+
+    @Value("${aws.credentials.access-key:}")
+    private String accessKey;
+
+    @Value("${aws.credentials.secret-key:}")
+    private String secretKey;
+
+    /**
+     * Creates an S3 client with the configured credentials.
+     */
+    @Bean
+    public AmazonS3 amazonS3() {
+        if (useStaticCredentials()) {
+            BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+            return AmazonS3ClientBuilder.standard()
+                    .withRegion(region)
+                    .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+                    .build();
+        } else {
+            return AmazonS3ClientBuilder.standard()
+                    .withRegion(region)
+                    .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                    .build();
+        }
+    }
+
+    /**
+     * Creates an SQS client with the configured credentials.
+     */
+    @Bean
+    public AmazonSQS amazonSQS() {
+        if (useStaticCredentials()) {
+            BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+            return AmazonSQSClientBuilder.standard()
+                    .withRegion(region)
+                    .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+                    .build();
+        } else {
+            return AmazonSQSClientBuilder.standard()
+                    .withRegion(region)
+                    .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                    .build();
+        }
+    }
+
+    /**
+     * Creates a Secrets Manager client with the configured credentials.
+     */
+    @Bean
+    public AWSSecretsManager awsSecretsManager() {
+        if (useStaticCredentials()) {
+            BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+            return AWSSecretsManagerClientBuilder.standard()
+                    .withRegion(region)
+                    .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+                    .build();
+        } else {
+            return AWSSecretsManagerClientBuilder.standard()
+                    .withRegion(region)
+                    .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                    .build();
+        }
+    }
+
+    private boolean useStaticCredentials() {
+        return accessKey != null && !accessKey.isEmpty() && 
+               secretKey != null && !secretKey.isEmpty();
+    }
+} 

@@ -42,8 +42,8 @@ Start building what matters today, and leave the infrastructure complexities to 
 ### From Source
 ```bash
 # Clone the repository
-git clone git@github.com:wellcode-ai/springwell-cli.git
-cd springwell-cli
+git clone https://github.com/springwell/cli.git
+cd cli
 
 # Build the CLI
 go build -o springwell cmd/springwell/main.go
@@ -139,6 +139,119 @@ All commands support the following options:
 - `--json`: Output in JSON format (for scripting)
 - `--help`: Show help information
 - `--version`: Show version information
+
+## Generated Project Structure
+
+When using the `aws-temporal-auth0` template, SpringWell CLI generates a comprehensive project structure with enterprise-ready components:
+
+```
+my-project/
+├── .github/                       # GitHub Actions workflows
+│   └── workflows/
+│       ├── ci.yml                 # Continuous Integration
+│       └── cd.yml                 # Continuous Deployment
+├── .mvn/                          # Maven wrapper
+├── charts/                        # Helm charts for Kubernetes deployment
+│   └── my-project/
+│       ├── templates/             # Kubernetes manifests templates
+│       └── values.yaml            # Configuration values for Helm
+├── src/
+│   ├── main/
+│   │   ├── java/com/example/myproject/
+│   │   │   ├── ApplicationMain.java      # Main application class
+│   │   │   ├── config/                  # Configuration classes
+│   │   │   │   ├── Auth0Config.java      # Auth0 security configuration
+│   │   │   │   ├── AwsConfig.java        # AWS services configuration
+│   │   │   │   ├── DatadogConfig.java    # Datadog monitoring config
+│   │   │   │   ├── SecurityConfig.java   # Spring Security config
+│   │   │   │   └── TemporalConfig.java   # Temporal workflow engine config
+│   │   │   ├── controller/              # REST controllers
+│   │   │   ├── domain/                  # Domain model classes
+│   │   │   │   ├── dto/                  # Data Transfer Objects
+│   │   │   │   │   └── ErrorResponseDTO.java  # Standard error response
+│   │   │   │   └── entity/               # JPA entities
+│   │   │   ├── exception/               # Custom exceptions
+│   │   │   │   ├── ResourceNotFoundException.java
+│   │   │   │   └── ValidationException.java
+│   │   │   ├── middleware/              # Request/response middleware
+│   │   │   │   ├── ErrorHandlingAdvice.java   # Global exception handler
+│   │   │   │   └── RequestLoggingFilter.java  # Request tracing
+│   │   │   ├── messaging/               # Messaging components
+│   │   │   │   ├── SqsMessageListener.java    # SQS message consumer
+│   │   │   │   ├── SqsMessageProcessor.java   # Message processing interface
+│   │   │   │   ├── SqsMessageSender.java      # SQS message producer
+│   │   │   │   └── impl/                      # Implementation classes
+│   │   │   ├── repository/              # Data access layer
+│   │   │   ├── service/                 # Business logic layer
+│   │   │   │   └── impl/                # Service implementations
+│   │   │   ├── temporal/                # Temporal workflow components
+│   │   │   │   ├── activity/            # Temporal activities
+│   │   │   │   │   └── impl/            # Activity implementations
+│   │   │   │   └── workflow/            # Temporal workflows
+│   │   │   │       └── impl/            # Workflow implementations
+│   │   │   └── util/                   # Utility classes
+│   │   ├── resources/
+│   │   │   ├── application.yml         # Main application config
+│   │   │   ├── application-dev.yml     # Development environment config
+│   │   │   ├── application-prod.yml    # Production environment config
+│   │   │   ├── db/migration/           # Database migration scripts
+│   │   │   │   └── V1__init.sql        # Initial database schema
+│   │   │   └── logback-spring.xml      # Logging configuration
+│   │   └── swagger/                    # OpenAPI specifications
+│   │       └── api-docs.yaml           # API documentation
+│   └── test/
+│       └── java/com/example/myproject/
+│           ├── controller/             # Controller tests
+│           ├── service/                # Service tests
+│           └── temporal/               # Temporal workflow tests
+├── .dockerignore                       # Docker build exclusions
+├── .gitignore                          # Git exclusions
+├── compose.yaml                        # Docker Compose configuration
+├── Dockerfile                          # Docker image definition
+├── mvnw                                # Maven wrapper script
+├── mvnw.cmd                            # Maven wrapper for Windows
+├── pom.xml                             # Maven dependencies and plugins
+└── README.md                           # Project documentation
+```
+
+### Key Component Descriptions
+
+#### 🔐 Security Components
+- **Auth0Config**: Configures JWT authentication with Auth0, handling token validation and claims extraction
+- **SecurityConfig**: Sets up request security, CORS, CSRF protection, and defines endpoint security rules
+- **JWT Authentication**: Complete auth flow using industry-standard JWT tokens
+
+#### 🔄 Middleware Components
+- **RequestLoggingFilter**: Adds request tracing with unique identifiers, integrates with Datadog for distributed tracing
+- **ErrorHandlingAdvice**: Global exception handler that provides consistent, well-structured error responses for all API endpoints
+- **Exception Classes**: Specialized exceptions like `ResourceNotFoundException` and `ValidationException`
+
+#### ⚙️ Configuration Components
+- **AwsConfig**: Sets up AWS clients for S3, SQS, and Secrets Manager
+- **DatadogConfig**: Configures Datadog APM (Application Performance Monitoring)
+- **TemporalConfig**: Configures Temporal clients, workers, and namespace
+
+#### 📨 Messaging Components
+- **SqsMessageListener**: Polls SQS queues and processes incoming messages
+- **SqsMessageSender**: Sends messages to SQS queues with options for delay and attributes
+- **Message Processors**: Interface and implementations for message handling
+
+#### ⏱️ Temporal Workflow Components
+- **Workflow Interfaces**: Define the contract for your workflows
+- **Workflow Implementations**: Implement the business logic of your workflows
+- **Activity Interfaces**: Define isolated steps in your workflows
+- **Activity Implementations**: Implement the actual work done in activities
+
+#### 📊 Monitoring and Observability
+- **Datadog Integration**: Pre-configured for metrics, traces, and logs
+- **Health Endpoints**: Spring Boot Actuator endpoints for monitoring
+- **Structured Logging**: Consistent logging format with context and correlation IDs
+
+#### 🏗️ Infrastructure Components
+- **Dockerfile**: Multi-stage build for optimized container images
+- **Docker Compose**: Local development environment with all dependencies
+- **Helm Charts**: Kubernetes deployment templates with best practices
+- **GitHub Actions**: CI/CD pipelines for automated testing and deployment
 
 ## Examples
 

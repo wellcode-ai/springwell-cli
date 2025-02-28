@@ -1,0 +1,15 @@
+package {{package}}.messaging;
+
+/**
+ * Interface for processing SQS messages.
+ * Implementations should contain the business logic for handling specific message types.
+ */
+public interface SqsMessageProcessor {
+
+    /**
+     * Process an SQS message payload.
+     * 
+     * @param messageBody The raw message body as a string
+     */
+    void process(String messageBody);
+} 

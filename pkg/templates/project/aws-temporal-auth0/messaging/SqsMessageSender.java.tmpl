@@ -1,0 +1,80 @@
+package {{package}}.messaging;
+
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.services.sqs.model.SendMessageResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+/**
+ * Service for sending messages to an AWS SQS queue.
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class SqsMessageSender {
+
+    private final AmazonSQS sqsClient;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * Sends a message to the specified SQS queue.
+     * 
+     * @param queueUrl The URL of the SQS queue
+     * @param message The message object to send (will be serialized to JSON)
+     * @return The result of the send operation
+     */
+    public SendMessageResult sendMessage(String queueUrl, Object message) {
+        try {
+            // Convert message object to JSON string
+            String messageBody = objectMapper.writeValueAsString(message);
+            
+            // Create send message request
+            SendMessageRequest sendMessageRequest = new SendMessageRequest()
+                    .withQueueUrl(queueUrl)
+                    .withMessageBody(messageBody);
+            
+            // Send the message
+            SendMessageResult result = sqsClient.sendMessage(sendMessageRequest);
+            log.info("Sent message to SQS queue {}, message ID: {}", queueUrl, result.getMessageId());
+            
+            return result;
+        } catch (Exception e) {
+            log.error("Failed to send message to SQS queue: {}", queueUrl, e);
+            throw new RuntimeException("Failed to send message to SQS", e);
+        }
+    }
+    
+    /**
+     * Sends a message with a delay to the specified SQS queue.
+     * 
+     * @param queueUrl The URL of the SQS queue
+     * @param message The message object to send (will be serialized to JSON)
+     * @param delaySeconds The delay in seconds before the message becomes available for processing
+     * @return The result of the send operation
+     */
+    public SendMessageResult sendMessageWithDelay(String queueUrl, Object message, Integer delaySeconds) {
+        try {
+            // Convert message object to JSON string
+            String messageBody = objectMapper.writeValueAsString(message);
+            
+            // Create send message request
+            SendMessageRequest sendMessageRequest = new SendMessageRequest()
+                    .withQueueUrl(queueUrl)
+                    .withMessageBody(messageBody)
+                    .withDelaySeconds(delaySeconds);
+            
+            // Send the message
+            SendMessageResult result = sqsClient.sendMessage(sendMessageRequest);
+            log.info("Sent message to SQS queue {} with delay of {} seconds, message ID: {}", 
+                    queueUrl, delaySeconds, result.getMessageId());
+            
+            return result;
+        } catch (Exception e) {
+            log.error("Failed to send message to SQS queue: {}", queueUrl, e);
+            throw new RuntimeException("Failed to send message to SQS", e);
+        }
+    }
+} 

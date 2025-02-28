@@ -1,0 +1,45 @@
+package {{package}}.config;
+
+import datadog.trace.api.Trace;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Configuration for Datadog monitoring and distributed tracing.
+ * Sets up custom metrics and integrates with Spring Boot Actuator.
+ */
+@Configuration
+public class DatadogConfig {
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+    
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
+
+    /**
+     * Customizes the meter registry with application-specific tags.
+     */
+    @Bean
+    public MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
+        return registry -> registry.config()
+                .commonTags(Tags.of(
+                        Tag.of("application", applicationName),
+                        Tag.of("environment", activeProfile)
+                ));
+    }
+    
+    /**
+     * Example of a traced method that would be monitored by Datadog APM.
+     * This is just a demonstration and would be used on actual service methods.
+     */
+    @Trace(operationName = "example.operation", resourceName = "ExampleResource")
+    public void exampleTracedMethod() {
+        // Method implementation
+    }
+} 

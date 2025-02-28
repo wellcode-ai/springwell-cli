@@ -1,0 +1,95 @@
+package {{package}}.messaging.impl;
+
+import {{package}}.messaging.SqsMessageProcessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+/**
+ * Default implementation of the SQS message processor.
+ * Handles parsing messages and dispatching them to the appropriate handlers.
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class DefaultSqsMessageProcessor implements SqsMessageProcessor {
+
+    private final ObjectMapper objectMapper;
+
+    @Override
+    public void process(String messageBody) {
+        try {
+            log.debug("Processing message: {}", messageBody);
+            
+            // Determine the message type
+            MessageType messageType = determineMessageType(messageBody);
+            
+            // Process based on message type
+            switch (messageType) {
+                case ORDER_CREATED:
+                    processOrderCreatedMessage(messageBody);
+                    break;
+                case PAYMENT_PROCESSED:
+                    processPaymentProcessedMessage(messageBody);
+                    break;
+                default:
+                    log.warn("Unknown message type, ignoring: {}", messageBody);
+            }
+        } catch (Exception e) {
+            log.error("Error processing message: {}", messageBody, e);
+            throw new RuntimeException("Failed to process SQS message", e);
+        }
+    }
+    
+    /**
+     * Determines the type of message based on its content.
+     * 
+     * @param messageBody The raw message body
+     * @return The message type
+     */
+    private MessageType determineMessageType(String messageBody) {
+        try {
+            // For demonstration, we'll just check if the message contains certain keywords
+            if (messageBody.contains("order") && messageBody.contains("created")) {
+                return MessageType.ORDER_CREATED;
+            } else if (messageBody.contains("payment") && messageBody.contains("processed")) {
+                return MessageType.PAYMENT_PROCESSED;
+            }
+            
+            return MessageType.UNKNOWN;
+        } catch (Exception e) {
+            log.error("Failed to determine message type", e);
+            return MessageType.UNKNOWN;
+        }
+    }
+    
+    /**
+     * Processes an order created message.
+     * 
+     * @param messageBody The raw message body
+     */
+    private void processOrderCreatedMessage(String messageBody) {
+        log.info("Processing order created message");
+        // Business logic for handling a new order
+    }
+    
+    /**
+     * Processes a payment processed message.
+     * 
+     * @param messageBody The raw message body
+     */
+    private void processPaymentProcessedMessage(String messageBody) {
+        log.info("Processing payment processed message");
+        // Business logic for handling a processed payment
+    }
+    
+    /**
+     * Enum representing the different types of messages that can be processed.
+     */
+    private enum MessageType {
+        ORDER_CREATED,
+        PAYMENT_PROCESSED,
+        UNKNOWN
+    }
+} 

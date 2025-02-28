@@ -1,0 +1,91 @@
+package {{package}}.messaging;
+
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * AWS SQS message listener for processing incoming messages from a queue.
+ * Uses a scheduled task to poll the queue at a regular interval.
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class SqsMessageListener {
+
+    private final AmazonSQS sqsClient;
+    private final ObjectMapper objectMapper;
+    private final SqsMessageProcessor messageProcessor;
+
+    @Value("${aws.sqs.queue-url}")
+    private String queueUrl;
+
+    @Value("${aws.sqs.max-messages:10}")
+    private int maxMessages;
+
+    @Value("${aws.sqs.wait-time-seconds:20}")
+    private int waitTimeSeconds;
+
+    /**
+     * Scheduled task that polls the SQS queue for messages.
+     * When messages are received, they are processed and then deleted from the queue.
+     */
+    @Scheduled(fixedDelayString = "${aws.sqs.polling-interval-ms:60000}")
+    public void pollMessages() {
+        log.debug("Polling SQS queue for messages: {}", queueUrl);
+
+        try {
+            // Create a request to receive messages from the queue
+            ReceiveMessageRequest receiveRequest = new ReceiveMessageRequest()
+                    .withQueueUrl(queueUrl)
+                    .withMaxNumberOfMessages(maxMessages)
+                    .withWaitTimeSeconds(waitTimeSeconds);
+
+            // Receive messages from the queue
+            List<Message> messages = sqsClient.receiveMessage(receiveRequest).getMessages();
+            
+            if (!messages.isEmpty()) {
+                log.info("Received {} messages from SQS queue", messages.size());
+                
+                // Process each message
+                for (Message message : messages) {
+                    try {
+                        processMessage(message);
+                        
+                        // Delete the message from the queue
+                        sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
+                    } catch (Exception e) {
+                        log.error("Error processing SQS message: {}", message.getMessageId(), e);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error polling SQS queue", e);
+        }
+    }
+
+    /**
+     * Processes a single SQS message.
+     * 
+     * @param message The SQS message to process
+     */
+    private void processMessage(Message message) {
+        log.debug("Processing SQS message: {}", message.getMessageId());
+        
+        try {
+            // Delegate to the message processor for business logic
+            messageProcessor.process(message.getBody());
+        } catch (Exception e) {
+            log.error("Failed to process message: {}", message.getMessageId(), e);
+            throw e;
+        }
+    }
+} 

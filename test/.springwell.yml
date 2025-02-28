@@ -11,7 +11,7 @@ code:
     standardizefields: true
 plugins: []
 project:
-    package: upi
+    package: com.test
     defaultsdirectory: .springwell/templates
 templates:
     directory: .springwell/templates

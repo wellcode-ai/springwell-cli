@@ -1,0 +1,32 @@
+package {{package}}.domain.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * Standard error response structure for the API.
+ * Used to provide consistent error format across all endpoints.
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ErrorResponseDTO {
+
+    /**
+     * HTTP status code
+     */
+    private int status;
+    
+    /**
+     * Human-readable error message
+     */
+    private String message;
+    
+    /**
+     * Detailed error information, typically used for validation errors
+     */
+    private Object details;
+} 
