@@ -1,89 +1,70 @@
-package {{package}}.temporal.worker;
+package {{package}}.service;
+
+import {{package}}.activity.SampleActivity;
+import {{package}}.workflow.SampleWorkflow;
+import {{package}}.workflow.impl.SampleWorkflowImpl;
 
 import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
-import io.temporal.worker.WorkerOptions;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 /**
- * Service responsible for setting up and managing Temporal workers.
- * Workers are the processes that execute workflow and activity code.
+ * Service responsible for registering and starting Temporal workers.
+ * Workers poll the Temporal service for workflow and activity tasks.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
-public class TemporalWorkerService {
+public class WorkerService {
 
+    private static final Logger logger = LoggerFactory.getLogger(WorkerService.class);
+
+    private final WorkerFactory workerFactory;
     private final WorkflowClient workflowClient;
-    private final WorkflowServiceStubs workflowServiceStubs;
-    private final TemporalWorkerRegistrar workerRegistrar;
-    
-    private WorkerFactory workerFactory;
-    
-    @Value("${temporal.worker.max-concurrent-workflow-task-pollers:5}")
-    private int maxConcurrentWorkflowTaskPollers;
-    
-    @Value("${temporal.worker.max-concurrent-activity-task-pollers:5}")
-    private int maxConcurrentActivityTaskPollers;
-    
-    @Value("${temporal.shutdown-grace-time-millis:5000}")
-    private long shutdownGraceTimeMillis;
+    private final SampleActivity sampleActivity;
 
-    /**
-     * Initializes and starts the Temporal workers when the application starts.
-     */
+    @Value("${temporal.task-queue}")
+    private String taskQueue;
+
+    public WorkerService(
+            WorkerFactory workerFactory,
+            WorkflowClient workflowClient,
+            SampleActivity sampleActivity) {
+        this.workerFactory = workerFactory;
+        this.workflowClient = workflowClient;
+        this.sampleActivity = sampleActivity;
+    }
+
     @PostConstruct
     public void startWorkers() {
-        log.info("Initializing Temporal workers...");
+        logger.info("Starting Temporal worker for task queue: {}", taskQueue);
+
+        // Create a Worker for the specified task queue
+        Worker worker = workerFactory.newWorker(taskQueue);
+
+        // Register workflow implementations
+        worker.registerWorkflowImplementationTypes(SampleWorkflowImpl.class);
         
-        // Create the worker factory
-        workerFactory = WorkerFactory.newInstance(workflowClient);
-        
-        // Register all task queues and their workflows/activities
-        workerRegistrar.registerWorkers(workerFactory, createWorkerOptions());
-        
-        // Start all workers
+        // Register activity implementations
+        worker.registerActivitiesImplementations(sampleActivity);
+
+        // Start all workers associated with the worker factory
+        // This method does not block
         workerFactory.start();
         
-        log.info("Temporal workers started successfully");
+        logger.info("Temporal worker started successfully");
     }
 
-    /**
-     * Gracefully shuts down the workers when the application stops.
-     */
     @PreDestroy
     public void stopWorkers() {
-        if (workerFactory != null) {
-            log.info("Shutting down Temporal workers...");
-            
-            try {
-                // Initiate graceful shutdown
-                workerFactory.shutdown();
-                workerFactory.awaitTermination(shutdownGraceTimeMillis, TimeUnit.MILLISECONDS);
-                log.info("Temporal workers shut down successfully");
-            } catch (InterruptedException e) {
-                log.warn("Temporal worker shutdown was interrupted", e);
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    /**
-     * Creates the default worker options to use when creating workers.
-     */
-    private WorkerOptions createWorkerOptions() {
-        return WorkerOptions.newBuilder()
-                .setMaxConcurrentWorkflowTaskPollers(maxConcurrentWorkflowTaskPollers)
-                .setMaxConcurrentActivityTaskPollers(maxConcurrentActivityTaskPollers)
-                .build();
+        logger.info("Shutting down Temporal workers");
+        workerFactory.shutdown();
+        logger.info("Temporal workers shut down successfully");
     }
 } 

@@ -1,22 +1,21 @@
-package {{package}}.temporal.workflow;
+package {{package}}.workflow;
 
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
 /**
- * Workflow interface for processing orders.
- * This defines the contract for the order processing workflow,
- * which coordinates the steps required to process an order.
+ * Sample Temporal workflow interface.
+ * This defines the contract for a workflow that can be executed by Temporal.
  */
 @WorkflowInterface
-public interface OrderProcessingWorkflow {
+public interface SampleWorkflow {
 
     /**
-     * Processes an order.
+     * The main workflow method that will be executed by Temporal.
      * 
-     * @param orderId The ID of the order to process
-     * @return A message indicating the result of the order processing
+     * @param name The input parameter for the workflow
+     * @return The result of the workflow execution
      */
     @WorkflowMethod
-    String processOrder(String orderId);
+    String execute(String name);
 } 

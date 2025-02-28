@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "{{artifactId}}.fullname" . }}
+  labels:
+    {{- include "{{artifactId}}.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "{{artifactId}}.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "{{artifactId}}.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "{{artifactId}}.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.env.SPRING_PROFILES_ACTIVE }}
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://{{ .Values.database.host }}:{{ .Values.database.port }}/{{ .Values.database.name }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.database.username }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.existingSecretKey }}
+            - name: TEMPORAL_SERVICE_ADDRESS
+              value: {{ .Values.env.TEMPORAL_SERVICE_ADDRESS }}
+            - name: TEMPORAL_NAMESPACE
+              value: {{ .Values.env.TEMPORAL_NAMESPACE }}
+            - name: AWS_REGION
+              value: {{ .Values.env.AWS_REGION }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

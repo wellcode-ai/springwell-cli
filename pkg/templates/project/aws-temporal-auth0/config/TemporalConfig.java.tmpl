@@ -4,42 +4,45 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
+import io.temporal.worker.WorkerFactory;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration for Temporal workflow engine.
- * Sets up connections to Temporal service and creates the workflow client.
+ * Configuration for Temporal workflow service.
  */
 @Configuration
 public class TemporalConfig {
 
-    @Value("${temporal.service-address:127.0.0.1:7233}")
+    @Value("${temporal.service-address}")
     private String temporalServiceAddress;
 
-    @Value("${temporal.namespace:default}")
-    private String temporalNamespace;
-    
-    /**
-     * Creates Temporal service stubs for connecting to the Temporal server.
-     */
+    @Value("${temporal.namespace}")
+    private String namespace;
+
     @Bean
     public WorkflowServiceStubs workflowServiceStubs() {
-        WorkflowServiceStubsOptions options = WorkflowServiceStubsOptions.newBuilder()
+        return WorkflowServiceStubs.newServiceStubs(
+            WorkflowServiceStubsOptions.newBuilder()
                 .setTarget(temporalServiceAddress)
-                .build();
-        return WorkflowServiceStubs.newServiceStubs(options);
+                .build()
+        );
     }
 
-    /**
-     * Creates the Temporal workflow client for starting and interacting with workflows.
-     */
     @Bean
     public WorkflowClient workflowClient(WorkflowServiceStubs workflowServiceStubs) {
-        WorkflowClientOptions options = WorkflowClientOptions.newBuilder()
-                .setNamespace(temporalNamespace)
-                .build();
-        return WorkflowClient.newInstance(workflowServiceStubs, options);
+        return WorkflowClient.newInstance(
+            workflowServiceStubs,
+            WorkflowClientOptions.newBuilder()
+                .setNamespace(namespace)
+                .build()
+        );
+    }
+
+    @Bean
+    public WorkerFactory workerFactory(WorkflowClient workflowClient) {
+        return WorkerFactory.newInstance(workflowClient);
     }
 } 
