@@ -15,6 +15,11 @@ DIST_DIR=dist
 # Installation directory
 INSTALL_DIR=/usr/local/bin
 
+# Project parameters
+PROJECT_NAME?=my-project
+TEMPLATE?=basic
+DB?=h2
+
 # Define the default target when just running make
 .PHONY: all
 all: clean build
@@ -104,6 +109,31 @@ run: build
 	@echo "Running $(BINARY_NAME)..."
 	@$(BUILD_DIR)/$(BINARY_NAME)
 
+# Generate a new project
+.PHONY: new-project
+new-project: build
+	@echo "Generating new project: $(PROJECT_NAME) (template: $(TEMPLATE), database: $(DB))..."
+	@$(BUILD_DIR)/$(BINARY_NAME) new $(PROJECT_NAME) --template $(TEMPLATE) --db $(DB)
+	@echo "Project created successfully at ./$(PROJECT_NAME)"
+	@echo ""
+	@echo "To navigate to your project, run:"
+	@echo "  cd $(PROJECT_NAME)"
+
+# Generate and navigate to a new project (creates helper script)
+.PHONY: create-project
+create-project: build
+	@echo "Generating new project and preparing navigation script..."
+	@$(BUILD_DIR)/$(BINARY_NAME) new $(PROJECT_NAME) --template $(TEMPLATE) --db $(DB)
+	@echo "#!/bin/sh" > navigate-to-project.sh
+	@echo "echo \"Navigating to $(PROJECT_NAME)...\"" >> navigate-to-project.sh
+	@echo "cd $(PROJECT_NAME)" >> navigate-to-project.sh
+	@echo "exec \$$SHELL" >> navigate-to-project.sh
+	@chmod +x navigate-to-project.sh
+	@echo "Project created successfully!"
+	@echo ""
+	@echo "To navigate to your project, run:"
+	@echo "  source navigate-to-project.sh"
+
 # Generate code documentation
 .PHONY: doc
 doc:
@@ -119,14 +149,16 @@ doc:
 .PHONY: help
 help:
 	@echo "SpringWell CLI - Make targets:"
-	@echo "  all         - Clean and build the application"
-	@echo "  build       - Build the application"
-	@echo "  clean       - Remove build artifacts"
-	@echo "  test        - Run tests"
-	@echo "  lint        - Run linting tools"
-	@echo "  install     - Install to $(INSTALL_DIR)"
-	@echo "  dist        - Build for multiple platforms"
-	@echo "  release     - Create release archives"
-	@echo "  run         - Build and run the application"
-	@echo "  doc         - Generate code documentation"
-	@echo "  help        - Show this help message" 
+	@echo "  all             - Clean and build the application"
+	@echo "  build           - Build the application"
+	@echo "  clean           - Remove build artifacts"
+	@echo "  test            - Run tests"
+	@echo "  lint            - Run linting tools"
+	@echo "  install         - Install to $(INSTALL_DIR)"
+	@echo "  dist            - Build for multiple platforms"
+	@echo "  release         - Create release archives"
+	@echo "  run             - Build and run the application"
+	@echo "  new-project     - Generate a new project (usage: make new-project PROJECT_NAME=my-app TEMPLATE=aws-temporal-auth0 DB=postgres)"
+	@echo "  create-project  - Generate a new project and create a navigation script"
+	@echo "  doc             - Generate code documentation"
+	@echo "  help            - Show this help message" 
