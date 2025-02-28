@@ -42,8 +42,8 @@ Start building what matters today, and leave the infrastructure complexities to 
 ### From Source
 ```bash
 # Clone the repository
-git clone https://github.com/springwell/cli.git
-cd cli
+git clone git@github.com:wellcode-ai/springwell-cli.git
+cd springwell-cli
 
 # Build the CLI
 go build -o springwell cmd/springwell/main.go
